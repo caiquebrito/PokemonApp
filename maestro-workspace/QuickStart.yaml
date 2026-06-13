@@ -1,0 +1,25 @@
+appId: com.ctb.quickstart
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "input_text"
+- inputText: https://www.google.com
+- tapOn: Send url button
+- assertVisible: https://www.google.com
+- tapOn:
+    id: "input_text"
+- inputText: https://www.amazon.c
+- assertVisible: Invalid input, type a valid URL
+- tapOn:
+    id: "input_text"
+- eraseText
+- tapOn:
+    id: "input_text"
+- eraseText
+- tapOn:
+    id: "input_text"
+- inputText: https://www.amazon.com
+- tapOn: Send url button
+- assertVisible: https://www.google.com
+- assertVisible: https://www.amazon.com

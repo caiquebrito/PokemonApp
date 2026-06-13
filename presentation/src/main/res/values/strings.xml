@@ -1,0 +1,11 @@
+<resources>
+
+    <!-- Shortener Screen -->
+    <string name="input_placeholder">Enter URL</string>
+    <string name="input_invalid_url">Invalid input, type a valid URL</string>
+    <string name="text_recent_shortened_url">Recently shortened URLs</string>
+    <string name="description_app_logo">App Logo</string>
+    <string name="description_send_url">Send url button</string>
+
+    <string name="error_shortener_message_null">Throwable message is Null</string>
+</resources>
