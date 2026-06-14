@@ -1,4 +1,6 @@
 pluginManagement {
+    // Quality convention plugins (quickstart.detekt / spotless / jacoco).
+    includeBuild("tools/build-logic")
     repositories {
         google {
             content {
