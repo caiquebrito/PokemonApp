@@ -4,31 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
-import com.ctb.design.compose.component.QuickStartNavHost
-import com.ctb.design.compose.theme.QuickStartTheme
-import com.ctb.presentation.urlshortener.UrlShortenerRoute
-import com.ctb.presentation.urlshortener.urlShortener
-import com.ctb.presentation.urlshortenerdetail.openUrlShortenerDetail
-import com.ctb.presentation.urlshortenerdetail.urlShortenerDetail
+import com.ctb.design.compose.component.PokemonNavHost
+import com.ctb.design.compose.theme.PokemonTheme
+import com.ctb.presentation.pokemondetail.openPokemonDetail
+import com.ctb.presentation.pokemondetail.pokemonDetail
+import com.ctb.presentation.pokemonhome.PokemonHomeRoute
+import com.ctb.presentation.pokemonhome.pokemonHome
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            QuickStartTheme {
+            PokemonTheme {
                 val navController = rememberNavController()
 
-                QuickStartNavHost(
+                PokemonNavHost(
                     navController = navController,
-                    startDestination = UrlShortenerRoute,
+                    startDestination = PokemonHomeRoute,
                 ) {
-                    urlShortener(
-                        closeFlow = { navController.popBackStack() },
-                        onItemClicked = { item ->
-                            navController.openUrlShortenerDetail(item)
+                    pokemonHome(
+                        onItemClicked = { pokemon ->
+                            navController.openPokemonDetail(pokemon.id)
                         },
                     )
-                    urlShortenerDetail(
+                    pokemonDetail(
                         onBackClick = { navController.popBackStack() },
                     )
                 }

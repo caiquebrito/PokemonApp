@@ -8,11 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun QuickStartThemePreview(
+fun PokemonThemePreview(
     color: Color = Color.White,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    QuickStartTheme {
+    PokemonTheme {
         Box(modifier = Modifier.background(color)) {
             content(this)
         }

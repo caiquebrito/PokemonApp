@@ -10,33 +10,39 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme =
-    darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80,
-    )
-
+// Brand-anchored scheme: Pokémon blue is the primary chrome color, yellow the accent, on a
+// lavender canvas with white surfaces. Type colors are applied by content via [PokemonTypeColor],
+// never through the scheme — keeping brand chrome and content color cleanly separated.
 private val LightColorScheme =
     lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-     */
+        primary = Palette.BrandBlue,
+        onPrimary = Palette.White,
+        primaryContainer = Palette.BrandBlueDark,
+        onPrimaryContainer = Palette.White,
+        secondary = Palette.BrandYellow,
+        onSecondary = Palette.BrandNavy,
+        tertiary = Palette.BrandBlueDark,
+        background = Palette.Lavender,
+        onBackground = Palette.Ink,
+        surface = Palette.Surface,
+        onSurface = Palette.Ink,
+        surfaceVariant = Palette.Track,
+        onSurfaceVariant = Palette.Ink,
+    )
+
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = Palette.BrandBlue,
+        onPrimary = Palette.White,
+        secondary = Palette.BrandYellow,
+        onSecondary = Palette.BrandNavy,
+        tertiary = Palette.BrandBlueDark,
     )
 
 @Composable
-fun QuickStartTheme(
+fun PokemonTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme =

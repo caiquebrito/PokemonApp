@@ -21,7 +21,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "DEFAULT_API_URL", "\"https://url-shortener-server.onrender.com/api/\"")
+        buildConfigField("String", "DEFAULT_API_URL", "\"https://pokeapi.co/api/v2/\"")
     }
 
     buildTypes {

@@ -39,10 +39,24 @@ subprojects {
             "**/*Test*.*", "**/di/**", "**/*_Factory*.*",
             // Compose/UI scaffolding that isn't unit-tested.
             "**/*ComposableSingletons*.*", "**/*\$*Preview*.*",
+            // Visual / Compose UI — verified via Robolectric correctness tests, not line coverage
+            // (Robolectric's classloader prevents on-the-fly JaCoCo from attributing those lines).
+            // Global rule, applied to every module — follows the project's UI naming convention:
+            //   *Screen / *Content / *Route composables, Activities, and the design `compose` pkg.
+            "**/*Screen*.*", "**/*Content*.*", "**/*Route*.*",
+            "**/*Activity*.*",
+            "**/compose/**",
         )
-        val kotlinClasses = fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
-            exclude(coverageExcludes)
-        }
+        // Android Kotlin class output moved across AGP versions; include the known locations
+        // (each fileTree rooted at its own dir so package paths stay correct).
+        val androidClassDirs =
+            listOf(
+                "tmp/kotlin-classes/debug",
+                "intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
+            ).map { path ->
+                fileTree(layout.buildDirectory.dir(path)) { exclude(coverageExcludes) }
+            }
+        val kotlinClasses = files(androidClassDirs)
         val javaClasses = fileTree(layout.buildDirectory.dir("classes/kotlin/main")) {
             exclude(coverageExcludes)
         }

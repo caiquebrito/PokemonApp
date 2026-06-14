@@ -2,14 +2,16 @@ package com.ctb.main
 
 import com.ctb.common.rest.ApiServiceFactory
 import com.ctb.common.rest.OkHttpClientFactory
-import com.ctb.data.ShortenUrlRemoteDataSource
-import com.ctb.data.ShortenUrlRepositoryImpl
-import com.ctb.data_remote.api.ShortenUrlAPI
-import com.ctb.data_remote.repository.ShortenUrlRemoteDataSourceImpl
-import com.ctb.domain.repositories.ShortenUrlRepository
-import com.ctb.domain.usecase.ShortenUrlUseCase
-import com.ctb.presentation.urlshortener.viewmodel.UrlShortenerViewModel
-import com.ctb.presentation.urlshortenerdetail.viewmodel.UrlShortenerDetailViewModel
+import com.ctb.data.PokemonRemoteDataSource
+import com.ctb.data.PokemonRepositoryImpl
+import com.ctb.data_remote.api.PokemonAPI
+import com.ctb.data_remote.repository.PokemonRemoteDataSourceImpl
+import com.ctb.domain.repositories.PokemonRepository
+import com.ctb.domain.usecase.GetPokemonDetailUseCase
+import com.ctb.domain.usecase.GetPokemonPageUseCase
+import com.ctb.domain.usecase.SearchPokemonUseCase
+import com.ctb.presentation.pokemondetail.viewmodel.PokemonDetailViewModel
+import com.ctb.presentation.pokemonhome.viewmodel.PokemonHomeViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.context.loadKoinModules
@@ -56,7 +58,7 @@ object QuickStartModule {
             }
             single {
                 ApiServiceFactory.create(
-                    clazz = ShortenUrlAPI::class.java,
+                    clazz = PokemonAPI::class.java,
                     endpoint = baseURL,
                     client = get(),
                 )
@@ -65,8 +67,8 @@ object QuickStartModule {
 
     private val dataModule =
         module {
-            factory<ShortenUrlRemoteDataSource> {
-                ShortenUrlRemoteDataSourceImpl(
+            factory<PokemonRemoteDataSource> {
+                PokemonRemoteDataSourceImpl(
                     api = get(),
                 )
             }
@@ -74,13 +76,25 @@ object QuickStartModule {
 
     private val domainModule =
         module {
-            single<ShortenUrlRepository> {
-                ShortenUrlRepositoryImpl(
+            single<PokemonRepository> {
+                PokemonRepositoryImpl(
                     remoteDataSource = get(),
                 )
             }
             factory {
-                ShortenUrlUseCase(
+                GetPokemonPageUseCase(
+                    repository = get(),
+                    dispatcher = Dispatchers.IO,
+                )
+            }
+            factory {
+                GetPokemonDetailUseCase(
+                    repository = get(),
+                    dispatcher = Dispatchers.IO,
+                )
+            }
+            factory {
+                SearchPokemonUseCase(
                     repository = get(),
                     dispatcher = Dispatchers.IO,
                 )
@@ -90,13 +104,17 @@ object QuickStartModule {
     private val presentationModule =
         module {
             viewModel {
-                UrlShortenerViewModel(
-                    shortenUrlUseCase = get(),
+                PokemonHomeViewModel(
+                    getPokemonPageUseCase = get(),
+                    searchPokemonUseCase = get(),
                     resourceProvider = get(),
                 )
             }
             viewModel {
-                UrlShortenerDetailViewModel()
+                PokemonDetailViewModel(
+                    getPokemonDetailUseCase = get(),
+                    resourceProvider = get(),
+                )
             }
         }
 }
