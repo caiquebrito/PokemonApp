@@ -37,6 +37,12 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            // Required for Robolectric to read merged resources/manifest and for Compose UI tests.
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -45,6 +51,7 @@ dependencies {
     implementation(project(":commonKotlin"))
     implementation(project(":domain"))
 
+    implementation(libs.coil.compose)
     implementation(libs.koin.android)
     implementation(libs.koin.core)
     implementation(libs.koin.compose)
@@ -68,6 +75,11 @@ dependencies {
     // Testing tools for ViewModel
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.mockK)
+
+    // Robolectric + Compose UI tests on the JVM (counted by jacoco unit-test coverage)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

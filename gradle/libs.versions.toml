@@ -19,6 +19,7 @@ mockK = "1.14.2"
 core-splashscreen = "1.0.1"
 detekt = "1.23.7"
 spotless = "6.25.0"
+robolectric = "4.14.1"
 
 # App Default Config
 compileSdk = "36"
@@ -115,11 +116,21 @@ mockK = { module = "io.mockk:mockk", version.ref = "mockK" }
 mockK-agent-jvm = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockK" }
 mockK-android = { module = "io.mockk:mockk-android", version.ref = "mockK" }
 
+# Robolectric — runs Android/Compose tests on the JVM (feeds jacoco unit-test coverage)
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
+# Compose UI test (pinned to the compose-ui version used at runtime)
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "ui" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "ui" }
+
 # Retrofit
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-adapterRxjava2 = { module = "com.squareup.retrofit2:adapter-rxjava2", version.ref = "retrofit" }
 retrofit-gsonConverter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 retrofit-mockWebServer = "com.squareup.okhttp3:mockwebserver:4.12.0"
+
+# Coil (image loading)
+coil-compose = "io.coil-kt:coil-compose:2.7.0"
 
 # Google
 google-gson = "com.google.code.gson:gson:2.13.1"

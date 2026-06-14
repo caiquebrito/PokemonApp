@@ -5,13 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
-import com.ctb.design.compose.theme.QuickStartTheme
+import com.ctb.design.compose.theme.PokemonTheme
 
 fun ComposeView.setComposableContent(content: @Composable () -> Unit) {
     this.apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
-            QuickStartTheme {
+            PokemonTheme {
                 content()
             }
         }

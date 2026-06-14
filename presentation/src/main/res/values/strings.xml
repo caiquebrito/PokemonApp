@@ -1,11 +1,22 @@
 <resources>
 
-    <!-- Shortener Screen -->
-    <string name="input_placeholder">Enter URL</string>
-    <string name="input_invalid_url">Invalid input, type a valid URL</string>
-    <string name="text_recent_shortened_url">Recently shortened URLs</string>
-    <string name="description_app_logo">App Logo</string>
-    <string name="description_send_url">Send url button</string>
+    <!-- Pokédex Home -->
+    <string name="search_placeholder">Search…</string>
+    <string name="description_app_logo">Pokémon logo</string>
 
-    <string name="error_shortener_message_null">Throwable message is Null</string>
+    <!-- Pokédex Detail -->
+    <string name="label_back_arrow">←</string>
+    <string name="label_base_stats">Base stats:</string>
+    <string name="label_moves">Main attacks:</string>
+    <string name="description_back">Back</string>
+    <string name="description_weight">Weight</string>
+    <string name="description_height">Height</string>
+
+    <!-- Search -->
+    <string name="search_empty_title">No Pokémon found</string>
+    <string name="search_empty_subtitle">No match for \"%1$s\". Tap the search key to look it up.</string>
+    <string name="error_pokemon_not_found">No Pokémon named \"%1$s\" was found.</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
 </resources>
