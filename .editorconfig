@@ -1,8 +1,0 @@
-# .editorconfig
-root = true
-
-[*.{kt,kts}]
-# Compose @Composable functions use PascalCase by design.
-ktlint_standard_function-naming = disabled
-# ':data-remote' maps to package com.ctb.data_remote (Gradle modules can't use '-').
-ktlint_standard_package-name = disabled
