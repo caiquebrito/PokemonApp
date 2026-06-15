@@ -13,7 +13,7 @@ data class PokemonHomeState(
     val nextOffset: Int? = 0,
     val hasMore: Boolean = true,
 ) : UIState {
-    /** Search filters only the already-loaded grid, by name. */
+    /** Search filters only the already-loaded grid, matching by Pokémon name. */
     val visiblePokemons: List<Pokemon>
         get() =
             if (query.isBlank()) {
