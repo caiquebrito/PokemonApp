@@ -10,6 +10,8 @@ import com.ctb.presentation.pokemondetail.openPokemonDetail
 import com.ctb.presentation.pokemondetail.pokemonDetail
 import com.ctb.presentation.pokemonhome.PokemonHomeRoute
 import com.ctb.presentation.pokemonhome.pokemonHome
+import com.ctb.presentation.pokemontypedetail.openPokemonTypeDetail
+import com.ctb.presentation.pokemontypedetail.pokemonTypeDetail
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +30,10 @@ class MainActivity : ComponentActivity() {
                         },
                     )
                     pokemonDetail(
+                        onBackClick = { navController.popBackStack() },
+                        onTypeClick = { type -> navController.openPokemonTypeDetail(type) },
+                    )
+                    pokemonTypeDetail(
                         onBackClick = { navController.popBackStack() },
                     )
                 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The system splash screen crops the icon to a circular safe zone, so inset the wide
+     Pokémon logo enough that the full image stays inside that circle instead of being cut off. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pokemon_logo"
+    android:insetLeft="22%"
+    android:insetRight="22%"
+    android:insetTop="32%"
+    android:insetBottom="32%" />

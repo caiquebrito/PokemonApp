@@ -12,6 +12,14 @@
     <string name="description_weight">Weight</string>
     <string name="description_height">Height</string>
 
+    <!-- Pokédex Type Matchups -->
+    <string name="label_weaknesses">Weak to</string>
+    <string name="label_resistances">Resistant to</string>
+    <string name="label_immunities">Immune to</string>
+    <string name="label_super_effective_against">Strong against</string>
+    <string name="label_not_very_effective_against">Not very effective against</string>
+    <string name="label_no_effect_against">No effect against</string>
+
     <!-- Search -->
     <string name="search_empty_title">No Pokémon found</string>
     <string name="search_empty_subtitle">No match for \"%1$s\". Tap the search key to look it up.</string>

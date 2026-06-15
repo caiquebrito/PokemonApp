@@ -12,6 +12,7 @@ import com.ctb.domain.usecase.GetPokemonPageUseCase
 import com.ctb.domain.usecase.SearchPokemonUseCase
 import com.ctb.presentation.pokemondetail.viewmodel.PokemonDetailViewModel
 import com.ctb.presentation.pokemonhome.viewmodel.PokemonHomeViewModel
+import com.ctb.presentation.pokemontypedetail.viewmodel.PokemonTypeDetailViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.context.loadKoinModules
@@ -115,6 +116,9 @@ object QuickStartModule {
                     getPokemonDetailUseCase = get(),
                     resourceProvider = get(),
                 )
+            }
+            viewModel {
+                PokemonTypeDetailViewModel()
             }
         }
 }

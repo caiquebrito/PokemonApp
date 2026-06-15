@@ -47,6 +47,7 @@ class PokemonDetailContentTest {
                 PokemonDetailContent(
                     state = PokemonDetailState(isLoading = false, detail = blaziken),
                     onBackClick = {},
+                    onTypeClick = {},
                 )
             }
         }

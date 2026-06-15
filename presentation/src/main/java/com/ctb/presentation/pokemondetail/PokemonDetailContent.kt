@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -48,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ctb.design.compose.component.PokemonImage
+import com.ctb.design.compose.component.TypeChip
 import com.ctb.design.compose.theme.PokemonTheme
 import com.ctb.design.compose.theme.PokemonTypeColor
 import com.ctb.design.compose.theme.Spacing
@@ -72,6 +71,7 @@ private const val MOVE_CHIP_ALPHA = 0.18f
 fun PokemonDetailContent(
     state: PokemonDetailState,
     onBackClick: () -> Unit,
+    onTypeClick: (PokemonType) -> Unit,
 ) {
     val detail = state.detail
     val primaryType = detail?.primaryType ?: PokemonType.UNKNOWN
@@ -103,7 +103,7 @@ fun PokemonDetailContent(
                 )
 
             detail != null -> {
-                DetailCard(detail = detail)
+                DetailCard(detail = detail, onTypeClick = onTypeClick)
                 PokemonImage(
                     imageUrl = detail.imageUrl,
                     contentDescription = detail.name,
@@ -119,11 +119,11 @@ fun PokemonDetailContent(
 }
 
 @Composable
-private fun BoxScope.DetailCard(detail: PokemonDetail) {
+private fun BoxScope.DetailCard(
+    detail: PokemonDetail,
+    onTypeClick: (PokemonType) -> Unit,
+) {
     val maxStat = detail.stats.maxOfOrNull { it.baseValue } ?: 1
-    // The card draws to the screen edge (behind the system nav bar); add the nav-bar inset to the
-    // scrollable content's bottom padding so the last items can scroll clear of the nav buttons.
-    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Column(
         modifier =
@@ -131,6 +131,9 @@ private fun BoxScope.DetailCard(detail: PokemonDetail) {
             .fillMaxWidth()
             .fillMaxHeight(CARD_HEIGHT_FRACTION)
             .align(Alignment.BottomCenter)
+            // Keep the card's content above the system nav bar instead of drawing behind it; the
+            // gradient background remains visible in the inset gap.
+            .navigationBarsPadding()
             .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
             .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
@@ -138,7 +141,7 @@ private fun BoxScope.DetailCard(detail: PokemonDetail) {
                 start = Spacing.medium,
                 end = Spacing.medium,
                 top = Spacing.medium,
-                bottom = Spacing.medium + navBarPadding,
+                bottom = Spacing.medium,
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -154,7 +157,7 @@ private fun BoxScope.DetailCard(detail: PokemonDetail) {
         Spacer(modifier = Modifier.height(Spacing.small))
 
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
-            detail.types.forEach { type -> TypeChip(type = type) }
+            detail.types.forEach { type -> TypeChip(type = type, onClick = { onTypeClick(type) }) }
         }
 
         Spacer(modifier = Modifier.height(Spacing.medium))
@@ -229,24 +232,6 @@ private fun MoveChip(
             text = move.name.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } },
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.labelLarge,
-        )
-    }
-}
-
-@Composable
-private fun TypeChip(type: PokemonType) {
-    Box(
-        modifier =
-        Modifier
-            .clip(CircleShape)
-            .background(PokemonTypeColor.colorFor(type))
-            .padding(horizontal = Spacing.large, vertical = Spacing.xSmall),
-    ) {
-        Text(
-            text = type.apiName.replaceFirstChar { it.uppercase() },
-            color = PokemonTypeColor.onTypeColor,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.titleMedium,
         )
     }
 }
@@ -405,6 +390,7 @@ private fun PokemonDetailContentPreview() {
                 ),
             ),
             onBackClick = {},
+            onTypeClick = {},
         )
     }
 }

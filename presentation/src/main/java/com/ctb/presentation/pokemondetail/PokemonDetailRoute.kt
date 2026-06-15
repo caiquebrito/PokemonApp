@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.ctb.domain.models.PokemonType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,11 +16,15 @@ fun NavController.openPokemonDetail(id: Int) {
     navigate(PokemonDetailRoute(id = id))
 }
 
-fun NavGraphBuilder.pokemonDetail(onBackClick: () -> Unit) =
+fun NavGraphBuilder.pokemonDetail(
+    onBackClick: () -> Unit,
+    onTypeClick: (PokemonType) -> Unit,
+) =
     composable<PokemonDetailRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<PokemonDetailRoute>()
         PokemonDetailScreen(
             pokemonId = route.id,
             onBackClick = onBackClick,
+            onTypeClick = onTypeClick,
         )
     }
