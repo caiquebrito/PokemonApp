@@ -1,0 +1,28 @@
+name: PR Title Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Expected: [TICKET-ID] Type: TICKET-ID Description
+          # Type is one of Implementation, Hotfix, Bugfix, Improvement, Chore.
+          # The ticket ID must match in both the prefix and after the type.
+          PATTERN='^\[([A-Z]+-[0-9]+)\] (Implementation|Hotfix|Bugfix|Improvement|Chore): \1 .+$'
+
+          if ! grep -P -q "$PATTERN" <<< "$PR_TITLE"; then
+            echo "::error::PR title does not match the required format."
+            echo "::error::Expected: [TICKET-ID] Implementation|Hotfix|Bugfix|Improvement|Chore: TICKET-ID Description"
+            echo "::error::Example:  [POKE-123] Implementation: POKE-123 Add login button"
+            echo "::error::Got:      $PR_TITLE"
+            exit 1
+          fi
+
+          echo "PR title is valid: $PR_TITLE"
