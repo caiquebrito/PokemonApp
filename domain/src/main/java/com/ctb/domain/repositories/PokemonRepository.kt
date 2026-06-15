@@ -5,7 +5,7 @@ import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonPage
 import kotlinx.coroutines.flow.Flow
 
-/** Source of truth for Pokémon listing, detail, and search data. */
+/** Single source of truth for Pokémon listing, detail, and search data. */
 interface PokemonRepository {
     fun getPokemonPage(
         limit: Int,
