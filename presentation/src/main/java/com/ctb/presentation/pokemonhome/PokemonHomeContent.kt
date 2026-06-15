@@ -81,13 +81,13 @@ fun PokemonHomeContent(
                 modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Spacing.small),
+                    .padding(vertical = Spacing.xSmall),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
                     painter = painterResource(id = DesignR.drawable.pokemon_logo),
                     contentDescription = stringResource(id = R.string.description_app_logo),
-                    modifier = Modifier.size(96.dp),
+                    modifier = Modifier.size(192.dp),
                 )
             }
 

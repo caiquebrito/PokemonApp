@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ctb.common.ui.collectAsEffect
+import com.ctb.domain.models.PokemonType
 import com.ctb.presentation.pokemondetail.viewmodel.PokemonDetailEffect
 import com.ctb.presentation.pokemondetail.viewmodel.PokemonDetailViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -17,6 +18,7 @@ fun PokemonDetailScreen(
     pokemonId: Int,
     viewModel: PokemonDetailViewModel = koinViewModel(),
     onBackClick: () -> Unit,
+    onTypeClick: (PokemonType) -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -40,5 +42,6 @@ fun PokemonDetailScreen(
     PokemonDetailContent(
         state = state,
         onBackClick = viewModel::onBack,
+        onTypeClick = onTypeClick,
     )
 }
