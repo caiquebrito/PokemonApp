@@ -2,6 +2,7 @@ package com.ctb.data
 
 import com.ctb.domain.repositories.PokemonRepository
 
+/** Delegates to [remoteDataSource] for all Pokémon data. */
 class PokemonRepositoryImpl(
     private val remoteDataSource: PokemonRemoteDataSource,
 ) : PokemonRepository {

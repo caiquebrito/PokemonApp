@@ -3,6 +3,7 @@ package com.ctb.presentation.pokemonhome.viewmodel
 import com.ctb.common.viewmodel.flow.UIState
 import com.ctb.domain.models.Pokemon
 
+/** UI state for the Pokémon home/search screen. */
 data class PokemonHomeState(
     val isLoading: Boolean = false,
     val isPaginating: Boolean = false,
