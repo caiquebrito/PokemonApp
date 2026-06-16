@@ -7,6 +7,7 @@ import com.ctb.data.PokemonRepositoryImpl
 import com.ctb.data_remote.api.PokemonAPI
 import com.ctb.data_remote.repository.PokemonRemoteDataSourceImpl
 import com.ctb.domain.repositories.PokemonRepository
+import com.ctb.domain.usecase.GetEvolutionChainUseCase
 import com.ctb.domain.usecase.GetPokemonDetailUseCase
 import com.ctb.domain.usecase.GetPokemonPageUseCase
 import com.ctb.domain.usecase.SearchPokemonUseCase
@@ -19,7 +20,7 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-object QuickStartModule {
+object PokemonModule {
     internal var baseURL: String = ""
     internal var isDebug: Boolean = false
 
@@ -27,8 +28,8 @@ object QuickStartModule {
         baseURL: String,
         isDebug: Boolean,
     ) {
-        QuickStartModule.baseURL = baseURL
-        QuickStartModule.isDebug = isDebug
+        PokemonModule.baseURL = baseURL
+        PokemonModule.isDebug = isDebug
         loadKoinModules(loadFeature)
     }
 
@@ -100,6 +101,12 @@ object QuickStartModule {
                     dispatcher = Dispatchers.IO,
                 )
             }
+            factory {
+                GetEvolutionChainUseCase(
+                    repository = get(),
+                    dispatcher = Dispatchers.IO,
+                )
+            }
         }
 
     private val presentationModule =
@@ -114,6 +121,7 @@ object QuickStartModule {
             viewModel {
                 PokemonDetailViewModel(
                     getPokemonDetailUseCase = get(),
+                    getEvolutionChainUseCase = get(),
                     resourceProvider = get(),
                 )
             }

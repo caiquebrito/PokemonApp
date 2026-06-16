@@ -1,10 +1,10 @@
 package com.ctb.main
 
-object QuickStart {
+object PokemonApp {
     fun init(
         baseURL: String,
         isDebug: Boolean,
     ) {
-        QuickStartModule.injectFeature(baseURL, isDebug)
+        PokemonModule.injectFeature(baseURL, isDebug)
     }
 }

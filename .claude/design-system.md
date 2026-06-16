@@ -18,7 +18,7 @@ com.ctb.design.compose/
 │   ├── Theme.kt
 │   └── ThemePreview.kt
 ├── component/
-│   └── QuickStartNavHost.kt    — Shared NavHost with slide animations
+│   └── PokemonNavHost.kt    — Shared NavHost with slide animations
 └── Extensions.kt
 ```
 

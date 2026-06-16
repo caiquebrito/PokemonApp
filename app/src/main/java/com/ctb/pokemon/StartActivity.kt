@@ -1,4 +1,4 @@
-package com.ctb.quickstart
+package com.ctb.pokemon
 
 import android.content.Intent
 import android.os.Bundle
