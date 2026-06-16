@@ -5,12 +5,14 @@ import com.ctb.common.ui.ResourceProvider
 import com.ctb.common.viewmodel.flow.ViewModel
 import com.ctb.commonkotlin.usecases.onFailure
 import com.ctb.commonkotlin.usecases.onSuccess
+import com.ctb.domain.usecase.GetEvolutionChainUseCase
 import com.ctb.domain.usecase.GetPokemonDetailUseCase
 import com.ctb.presentation.R
 import kotlinx.coroutines.launch
 
 class PokemonDetailViewModel(
     private val getPokemonDetailUseCase: GetPokemonDetailUseCase,
+    private val getEvolutionChainUseCase: GetEvolutionChainUseCase,
     private val resourceProvider: ResourceProvider,
 ) : ViewModel<PokemonDetailState, PokemonDetailEffect>(PokemonDetailState()) {
 
@@ -35,6 +37,13 @@ class PokemonDetailViewModel(
                 }
             }
             setState { it.copy(isLoading = false) }
+        }
+        viewModelScope.launch {
+            getEvolutionChainUseCase(
+                GetEvolutionChainUseCase.Params(pokemonId = pokemonId),
+            ).collect { result ->
+                result.onSuccess { chain -> setState { it.copy(evolutionChain = chain) } }
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import com.ctb.data.PokemonRemoteDataSource
 import com.ctb.data_remote.api.PokemonAPI
 import com.ctb.data_remote.response.toDomain
 import com.ctb.data_remote.response.toPokemon
+import com.ctb.domain.models.EvolutionChain
 import com.ctb.domain.models.Pokemon
 import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonPage
@@ -55,6 +56,15 @@ class PokemonRemoteDataSourceImpl(
     override fun searchPokemonByName(name: String): Flow<Pokemon> =
         flow {
             emit(api.getPokemonByName(name).toPokemon())
+        }.catch {
+            throw it
+        }
+
+    override fun getEvolutionChain(pokemonId: Int): Flow<EvolutionChain> =
+        flow {
+            val species = api.getPokemonSpecies(pokemonId)
+            val chainId = species.evolutionChain.extractId()
+            emit(api.getEvolutionChain(chainId).toDomain())
         }.catch {
             throw it
         }

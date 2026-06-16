@@ -13,4 +13,6 @@ class PokemonRepositoryImpl(
     override fun getPokemonDetail(id: Int) = remoteDataSource.getPokemonDetail(id)
 
     override fun searchPokemonByName(name: String) = remoteDataSource.searchPokemonByName(name)
+
+    override fun getEvolutionChain(pokemonId: Int) = remoteDataSource.getEvolutionChain(pokemonId)
 }
