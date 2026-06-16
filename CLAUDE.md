@@ -1,7 +1,7 @@
 <!-- nodum:start -->
 ## Knowledge Graph Context — Nodum
 
-**Load this before each response.** Stack: **unknown** | Files: **64** | Functions: **84** | Last sync: **2026-06-14 00:17**
+**Load this before each response.** Stack: **unknown** | Files: **77** | Functions: **103** | Last sync: **2026-06-15 23:03**
 
 Analyze code with this project's structure in mind. Reference the knowledge graph when answering questions about code organization, dependencies, or implementation patterns.
 <!-- nodum:end -->

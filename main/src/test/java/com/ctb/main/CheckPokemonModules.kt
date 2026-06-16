@@ -3,7 +3,7 @@ package com.ctb.main
 import android.content.Context
 import com.ctb.common.rest.OkHttpClientFactory
 import com.ctb.common.ui.ResourceProvider
-import com.ctb.main.QuickStartModule.loadFeature
+import com.ctb.main.PokemonModule.loadFeature
 import io.mockk.mockk
 import okhttp3.logging.HttpLoggingInterceptor
 import org.junit.After
@@ -17,7 +17,7 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.verify.verify
 
-class CheckQuickStartModules : KoinTest {
+class CheckPokemonModules : KoinTest {
     private val mockModule =
         module {
             single { HttpLoggingInterceptor() }
@@ -31,7 +31,7 @@ class CheckQuickStartModules : KoinTest {
 
     @Before
     fun setup() {
-        QuickStartModule.baseURL = "https://mockurl.quickstart.com"
+        PokemonModule.baseURL = "https://mockurl.pokemon.com"
 
         startKoin {
             androidContext(mockk<Context>())

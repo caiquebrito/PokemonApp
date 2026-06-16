@@ -10,9 +10,9 @@
 
 ```
 com.ctb.main/
-├── QuickStart.kt           — Public init(baseURL, isDebug) entry point
-├── QuickStartModule.kt     — All Koin modules wired together
-└── CheckQuickStartModules.kt — Koin graph verification test (in test/)
+├── Pokemon.kt           — Public init(baseURL, isDebug) entry point
+├── PokemonModule.kt     — All Koin modules wired together
+└── CheckPokemonModules.kt — Koin graph verification test (in test/)
 ```
 
 ## Rules

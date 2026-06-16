@@ -1,5 +1,6 @@
 package com.ctb.domain.repositories
 
+import com.ctb.domain.models.EvolutionChain
 import com.ctb.domain.models.Pokemon
 import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonPage
@@ -15,4 +16,6 @@ interface PokemonRepository {
 
     /** Looks up a single Pokémon by exact name (used when it isn't in the loaded pages yet). */
     fun searchPokemonByName(name: String): Flow<Pokemon>
+
+    fun getEvolutionChain(pokemonId: Int): Flow<EvolutionChain>
 }

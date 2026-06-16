@@ -50,6 +50,7 @@ import com.ctb.design.compose.component.TypeChip
 import com.ctb.design.compose.theme.PokemonTheme
 import com.ctb.design.compose.theme.PokemonTypeColor
 import com.ctb.design.compose.theme.Spacing
+import com.ctb.domain.models.EvolutionChain
 import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonMove
 import com.ctb.domain.models.PokemonStat
@@ -103,7 +104,11 @@ fun PokemonDetailContent(
                 )
 
             detail != null -> {
-                DetailCard(detail = detail, onTypeClick = onTypeClick)
+                DetailCard(
+                    detail = detail,
+                    evolutionChain = state.evolutionChain,
+                    onTypeClick = onTypeClick,
+                )
                 PokemonImage(
                     imageUrl = detail.imageUrl,
                     contentDescription = detail.name,
@@ -121,6 +126,7 @@ fun PokemonDetailContent(
 @Composable
 private fun BoxScope.DetailCard(
     detail: PokemonDetail,
+    evolutionChain: EvolutionChain?,
     onTypeClick: (PokemonType) -> Unit,
 ) {
     val maxStat = detail.stats.maxOfOrNull { it.baseValue } ?: 1
@@ -180,6 +186,11 @@ private fun BoxScope.DetailCard(
         detail.stats.forEach { stat ->
             StatBar(stat = stat, maxValue = maxStat)
             Spacer(modifier = Modifier.height(Spacing.xSmall))
+        }
+
+        if (evolutionChain != null && evolutionChain.steps.size > 1) {
+            Spacer(modifier = Modifier.height(Spacing.medium))
+            EvolutionChainSection(chain = evolutionChain)
         }
 
         if (detail.moves.isNotEmpty()) {

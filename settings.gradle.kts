@@ -1,5 +1,5 @@
 pluginManagement {
-    // Quality convention plugins (quickstart.detekt / spotless / jacoco).
+    // Quality convention plugins (pokemon.detekt / spotless / jacoco).
     includeBuild("tools/build-logic")
     repositories {
         google {
@@ -21,7 +21,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "QuickStart"
+rootProject.name = "PokemonApp"
 include(":app")
 include(":data")
 include(":data-remote")

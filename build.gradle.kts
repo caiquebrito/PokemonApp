@@ -13,7 +13,7 @@ plugins {
     //   spotless — ktlint formatting   (./gradlew spotlessCheck / spotlessApply)
     //   jacoco   — unit-test coverage  (./gradlew jacocoTestReport / jacocoAggregatedReport)
     // ---------------------------------------------------------------------------
-    id("quickstart.detekt")
-    id("quickstart.spotless")
-    id("quickstart.jacoco")
+    id("pokemon.detekt")
+    id("pokemon.spotless")
+    id("pokemon.jacoco")
 }

@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    namespace = "com.ctb.quickstart"
+    namespace = "com.ctb.pokemon"
     compileSdk =
         libs.versions.compileSdk
             .get()
             .toInt()
 
     defaultConfig {
-        applicationId = "com.ctb.quickstart"
+        applicationId = "com.ctb.pokemon"
         minSdk =
             libs.versions.minSdk
                 .get()

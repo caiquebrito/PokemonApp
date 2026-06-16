@@ -1,5 +1,6 @@
 package com.ctb.data
 
+import com.ctb.domain.models.EvolutionChain
 import com.ctb.domain.models.Pokemon
 import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonPage
@@ -14,4 +15,6 @@ interface PokemonRemoteDataSource {
     fun getPokemonDetail(id: Int): Flow<PokemonDetail>
 
     fun searchPokemonByName(name: String): Flow<Pokemon>
+
+    fun getEvolutionChain(pokemonId: Int): Flow<EvolutionChain>
 }

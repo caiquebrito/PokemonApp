@@ -1,4 +1,4 @@
-appId: com.ctb.quickstart
+appId: com.ctb.pokemon
 ---
 - launchApp:
     clearState: true

@@ -1,5 +1,5 @@
 // Standalone settings for the build-logic included build. It hosts the quality
-// convention plugins (quickstart.detekt / quickstart.spotless / quickstart.jacoco)
+// convention plugins (pokemon.detekt / pokemon.spotless / pokemon.jacoco)
 // applied by the root project.
 pluginManagement {
     repositories {
