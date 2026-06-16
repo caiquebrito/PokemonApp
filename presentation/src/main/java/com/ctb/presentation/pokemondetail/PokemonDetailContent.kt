@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +42,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,7 +51,6 @@ import com.ctb.design.compose.theme.PokemonTheme
 import com.ctb.design.compose.theme.PokemonTypeColor
 import com.ctb.design.compose.theme.Spacing
 import com.ctb.domain.models.EvolutionChain
-import com.ctb.domain.models.EvolutionStep
 import com.ctb.domain.models.PokemonDetail
 import com.ctb.domain.models.PokemonMove
 import com.ctb.domain.models.PokemonStat
@@ -355,61 +351,6 @@ private fun StatBar(
             Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = Spacing.small),
-        )
-    }
-}
-
-@Composable
-private fun EvolutionChainSection(chain: EvolutionChain) {
-    Text(
-        text = stringResource(id = R.string.label_evolution_chain),
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = Spacing.xSmall),
-    )
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.xSmall),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        items(items = chain.steps, key = { it.id }) { step ->
-            EvolutionStepItem(step = step)
-            if (step != chain.steps.last()) {
-                Text(
-                    text = "→",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EvolutionStepItem(step: EvolutionStep) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(72.dp),
-    ) {
-        PokemonImage(
-            imageUrl = step.imageUrl,
-            contentDescription = step.name,
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = step.name,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
         )
     }
 }
