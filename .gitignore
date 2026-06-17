@@ -12,6 +12,11 @@ build/
 .externalNativeBuild
 .cxx
 
+# Signing — never commit key material
+keystore.properties
+*.jks
+*.keystore
+
 # OS
 .DS_Store
 

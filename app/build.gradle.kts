@@ -1,6 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+private fun loadKeystoreProperties(): Properties {
+    val props = Properties()
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) props.load(file.inputStream())
+    return props
 }
 
 android {
@@ -24,9 +33,28 @@ android {
         buildConfigField("String", "DEFAULT_API_URL", "\"https://pokeapi.co/api/v2/\"")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystore = loadKeystoreProperties()
+            storeFile = file(keystore["storeFile"] as? String ?: System.getenv("KEYSTORE_PATH") ?: "release.jks")
+            storePassword = keystore["storePassword"] as? String ?: System.getenv("KEYSTORE_PASSWORD").orEmpty()
+            keyAlias = keystore["keyAlias"] as? String ?: System.getenv("KEY_ALIAS").orEmpty()
+            keyPassword = keystore["keyPassword"] as? String ?: System.getenv("KEY_PASSWORD").orEmpty()
+        }
+    }
+
     buildTypes {
-        release {
+        debug {
+            isDebuggable = true
             isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+        release {
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
