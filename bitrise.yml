@@ -8,22 +8,28 @@ app:
     - GRADLEW_PATH: ./gradlew
     - PACKAGE_NAME: com.ctb.pokemon
 
-# ── Reusable step groups ───────────────────────────────────────────────────────
-# Bitrise does not support YAML anchors; keep each workflow self-contained.
+# ── Branching strategy ─────────────────────────────────────────────────────────
+#
+#   feature/* ──► develop ──► release/x.y.z ──► main  (protected)
+#
+#   pr-check          : every PR (feature→develop, release→main)
+#   prepare-release   : manual — cuts release branch from develop, bumps
+#                       version, generates changelog, opens PR to main
+#   deploy-to-play-store : auto on push to main (PR merge) — builds signed
+#                          AAB, tags, publishes to Play Store internal track
+#   promote-to-production: manual — promotes internal build to production
+#   deploy-internal   : manual — ad-hoc internal builds outside the release flow
 
 workflows:
 
   # ────────────────────────────────────────────────────────────────────────────
   # pr-check
-  # Triggered automatically on every pull request (configure in Bitrise triggers).
-  # Runs quality gates + unit tests. No signing, no deployment.
+  # Trigger: every PR opened/updated (feature → develop, release/* → main).
   # ────────────────────────────────────────────────────────────────────────────
   pr-check:
     steps:
       - activate-ssh-key@4: {}
-
       - git-clone@8: {}
-
       - cache-pull@2: {}
 
       - gradle-runner@2:
@@ -53,23 +59,223 @@ workflows:
       - deploy-to-bitrise-io@2: {}
 
   # ────────────────────────────────────────────────────────────────────────────
-  # deploy-internal
-  # Triggered manually (or on push to main) to build a signed release AAB and
-  # upload it to the Play Store internal testing track.
+  # prepare-release
+  # Trigger: manual from Bitrise UI (run on develop branch).
+  #
+  # What it does:
+  #   1. Reads current versionName/versionCode from app/build.gradle.kts
+  #   2. Bumps the version (patch by default — override BUMP env var to
+  #      "minor" or "major" in the Bitrise manual trigger dialog)
+  #   3. Creates release/<new-version> branch
+  #   4. Generates CHANGELOG.md from commits since last tag
+  #   5. Commits + pushes the release branch
+  #   6. Opens a PR from release/<version> → main via GitHub API
   #
   # Required secrets (Bitrise → Secrets):
-  #   KEYSTORE_PATH      path where Bitrise stores the uploaded .jks
-  #   KEYSTORE_PASSWORD
-  #   KEY_ALIAS
-  #   KEY_PASSWORD
-  #   BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH  (set automatically after upload)
+  #   GITHUB_PAT  — Personal Access Token with repo scope (to open the PR)
+  # ────────────────────────────────────────────────────────────────────────────
+  prepare-release:
+    envs:
+      - BUMP: patch   # patch | minor | major — override in Bitrise trigger UI
+    steps:
+      - activate-ssh-key@4: {}
+
+      - git-clone@8:
+          inputs:
+            - branch: develop
+
+      - script@1:
+          title: Bump version and create release branch
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+
+                CURRENT_CODE=$(grep -E '^\s+versionCode = [0-9]+' app/build.gradle.kts | grep -oE '[0-9]+')
+                CURRENT_NAME=$(grep -E '^\s+versionName = "[0-9]+\.[0-9]+\.[0-9]+"' app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+
+                IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_NAME"
+                case "${BUMP:-patch}" in
+                  major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+                  minor) MINOR=$((MINOR+1)); PATCH=0     ;;
+                  *)     PATCH=$((PATCH+1))               ;;
+                esac
+                NEW_NAME="$MAJOR.$MINOR.$PATCH"
+                NEW_CODE=$((CURRENT_CODE+1))
+                BRANCH="release/$NEW_NAME"
+
+                git checkout -b "$BRANCH"
+
+                # Linux sed — update both fields in build.gradle.kts
+                sed -i "s/versionCode = $CURRENT_CODE/versionCode = $NEW_CODE/" app/build.gradle.kts
+                sed -i "s/versionName = \"$CURRENT_NAME\"/versionName = \"$NEW_NAME\"/" app/build.gradle.kts
+
+                envman add --key RELEASE_BRANCH  --value "$BRANCH"
+                envman add --key NEW_VERSION_NAME --value "$NEW_NAME"
+                envman add --key NEW_VERSION_CODE --value "$NEW_CODE"
+
+      - script@1:
+          title: Generate changelog since last tag
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+
+                LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+                DATE=$(date +%Y-%m-%d)
+
+                if [ -z "$LAST_TAG" ]; then
+                  LOG=$(git log --pretty=format:"- %s" --no-merges)
+                else
+                  LOG=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s" --no-merges \
+                        | grep -v "^- chore: release ")  # exclude the version bump commit
+                fi
+
+                ENTRY="## [$NEW_VERSION_NAME] - $DATE\n\n$LOG"
+
+                # Prepend to CHANGELOG.md (create if first release)
+                if [ -f CHANGELOG.md ]; then
+                  EXISTING=$(cat CHANGELOG.md)
+                  printf "%b\n\n%s\n" "$ENTRY" "$EXISTING" > CHANGELOG.md
+                else
+                  printf "# Changelog\n\n%b\n" "$ENTRY" > CHANGELOG.md
+                fi
+
+                # Save just this release's notes for the Play Store upload step
+                printf "%s" "$LOG" > CHANGELOG_LATEST.txt
+
+                envman add --key CHANGELOG_ENTRY --value "$(printf '%b' "$ENTRY")"
+
+      - script@1:
+          title: Commit, push, and open PR to main
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+
+                git config user.email "ci@bitrise.io"
+                git config user.name "Bitrise CI"
+
+                git add app/build.gradle.kts CHANGELOG.md CHANGELOG_LATEST.txt
+                git commit -m "chore: release $NEW_VERSION_NAME (versionCode $NEW_VERSION_CODE)"
+                git push origin "$RELEASE_BRANCH"
+
+                # Parse owner/repo from remote URL (works for both SSH and HTTPS remotes)
+                REPO=$(git remote get-url origin \
+                       | sed 's/.*github\.com[:/]\(.*\)\.git/\1/' \
+                       | sed 's/.*github\.com[:/]\(.*\)/\1/')
+
+                # Build PR body — jq handles newlines and special chars safely
+                BODY=$(jq -Rsa . <<EOF
+                ## Release $NEW_VERSION_NAME
+
+                $CHANGELOG_ENTRY
+
+                ---
+                *Automated release — review, approve, and merge to trigger the Play Store deploy.*
+                EOF
+                )
+
+                curl -fsS -X POST \
+                  -H "Authorization: token $GITHUB_PAT" \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  "https://api.github.com/repos/$REPO/pulls" \
+                  -d "{\"title\":\"release: $NEW_VERSION_NAME\",\"body\":$BODY,\"head\":\"$RELEASE_BRANCH\",\"base\":\"main\"}"
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # deploy-to-play-store
+  # Trigger: push to main (configure in Bitrise triggers → push branch = main).
+  # Runs automatically when the release PR is merged.
+  #
+  # What it does:
+  #   1. Builds a signed release AAB (Gradle handles signing via env vars)
+  #   2. Tags the commit on main with v<versionName>
+  #   3. Uploads the AAB to the Play Store internal testing track
+  #   4. [placeholder] Firebase App Distribution upload
+  #
+  # Required secrets (Bitrise → Secrets):
+  #   KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD  (signing)
+  #   BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH                    (Play Store)
+  #   GITHUB_PAT                                                  (git tag push)
+  # ────────────────────────────────────────────────────────────────────────────
+  deploy-to-play-store:
+    steps:
+      - activate-ssh-key@4: {}
+      - git-clone@8: {}
+      - cache-pull@2: {}
+
+      - script@1:
+          title: Read version from build.gradle.kts
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                VERSION=$(grep -E '^\s+versionName = "[0-9]+\.[0-9]+\.[0-9]+"' app/build.gradle.kts \
+                          | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+                envman add --key APP_VERSION  --value "$VERSION"
+                envman add --key VERSION_TAG  --value "v$VERSION"
+
+                # Load release notes written by prepare-release (empty fallback)
+                NOTES=$(cat CHANGELOG_LATEST.txt 2>/dev/null || echo "Bug fixes and improvements.")
+                envman add --key RELEASE_NOTES --value "$NOTES"
+
+      - gradle-runner@2:
+          title: Build signed release AAB
+          inputs:
+            - gradle_task: :app:bundleRelease
+            - gradlew_path: $GRADLEW_PATH
+
+      - script@1:
+          title: Export AAB path and push git tag
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+
+                AAB=$(find "$BITRISE_SOURCE_DIR/app/build/outputs/bundle/release" -name "*.aab" | head -1)
+                envman add --key BITRISE_AAB_PATH --value "$AAB"
+
+                git config user.email "ci@bitrise.io"
+                git config user.name "Bitrise CI"
+                git tag -a "$VERSION_TAG" -m "Release $VERSION_TAG"
+                git push origin "$VERSION_TAG"
+
+      - google-play-deploy@3:
+          title: Upload to Play Store — internal track
+          inputs:
+            - package_name: $PACKAGE_NAME
+            - track: internal
+            - aab_path: $BITRISE_AAB_PATH
+            - service_account_json_key_path: $BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH
+            - what_s_new_texts_map: "en-US:$RELEASE_NOTES"
+
+      # ── Firebase App Distribution (coming soon) ────────────────────────────
+      # Uncomment and fill in FIREBASE_APP_ID + FIREBASE_TOKEN secrets when ready.
+      #
+      # - firebase-app-distribution@0:
+      #     title: Distribute to Firebase testers
+      #     inputs:
+      #       - app: $FIREBASE_APP_ID
+      #       - groups: internal-testers
+      #       - release_notes: $RELEASE_NOTES
+      #       - firebase_token: $FIREBASE_TOKEN
+
+      - cache-push@2:
+          inputs:
+            - cache_paths: |
+                ~/.gradle
+                .gradle
+
+      - deploy-to-bitrise-io@2: {}
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # deploy-internal
+  # Trigger: manual — ad-hoc internal build outside the release flow.
   # ────────────────────────────────────────────────────────────────────────────
   deploy-internal:
     steps:
       - activate-ssh-key@4: {}
-
       - git-clone@8: {}
-
       - cache-pull@2: {}
 
       - gradle-runner@2:
@@ -85,7 +291,6 @@ workflows:
                 #!/bin/bash
                 set -ex
                 AAB=$(find "$BITRISE_SOURCE_DIR/app/build/outputs/bundle/release" -name "*.aab" | head -1)
-                echo "AAB found: $AAB"
                 envman add --key BITRISE_AAB_PATH --value "$AAB"
 
       - google-play-deploy@3:
@@ -106,15 +311,12 @@ workflows:
 
   # ────────────────────────────────────────────────────────────────────────────
   # promote-to-production
-  # Run this manually after validating the internal build.
-  # Promotes the latest internal release to production without a rebuild.
-  #
-  # Required secrets: same as deploy-internal.
+  # Trigger: manual — promotes the validated internal build to production
+  # without a rebuild.
   # ────────────────────────────────────────────────────────────────────────────
   promote-to-production:
     steps:
       - activate-ssh-key@4: {}
-
       - git-clone@8: {}
 
       - google-play-deploy@3:
@@ -124,5 +326,4 @@ workflows:
             - track: internal
             - track_promote_to: production
             - service_account_json_key_path: $BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH
-            # Leave aab_path empty — promote mode re-uses the already-uploaded bundle.
             - aab_path: ""
