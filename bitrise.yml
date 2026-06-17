@@ -1,0 +1,128 @@
+format_version: "21"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: android
+
+# ── Shared env vars ────────────────────────────────────────────────────────────
+app:
+  envs:
+    - GRADLEW_PATH: ./gradlew
+    - PACKAGE_NAME: com.ctb.pokemon
+
+# ── Reusable step groups ───────────────────────────────────────────────────────
+# Bitrise does not support YAML anchors; keep each workflow self-contained.
+
+workflows:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # pr-check
+  # Triggered automatically on every pull request (configure in Bitrise triggers).
+  # Runs quality gates + unit tests. No signing, no deployment.
+  # ────────────────────────────────────────────────────────────────────────────
+  pr-check:
+    steps:
+      - activate-ssh-key@4: {}
+
+      - git-clone@8: {}
+
+      - cache-pull@2: {}
+
+      - gradle-runner@2:
+          title: Spotless check
+          inputs:
+            - gradle_task: spotlessCheck
+            - gradlew_path: $GRADLEW_PATH
+
+      - gradle-runner@2:
+          title: Detekt
+          inputs:
+            - gradle_task: detekt
+            - gradlew_path: $GRADLEW_PATH
+
+      - gradle-runner@2:
+          title: Unit tests
+          inputs:
+            - gradle_task: test
+            - gradlew_path: $GRADLEW_PATH
+
+      - cache-push@2:
+          inputs:
+            - cache_paths: |
+                ~/.gradle
+                .gradle
+
+      - deploy-to-bitrise-io@2: {}
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # deploy-internal
+  # Triggered manually (or on push to main) to build a signed release AAB and
+  # upload it to the Play Store internal testing track.
+  #
+  # Required secrets (Bitrise → Secrets):
+  #   KEYSTORE_PATH      path where Bitrise stores the uploaded .jks
+  #   KEYSTORE_PASSWORD
+  #   KEY_ALIAS
+  #   KEY_PASSWORD
+  #   BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH  (set automatically after upload)
+  # ────────────────────────────────────────────────────────────────────────────
+  deploy-internal:
+    steps:
+      - activate-ssh-key@4: {}
+
+      - git-clone@8: {}
+
+      - cache-pull@2: {}
+
+      - gradle-runner@2:
+          title: Build signed release AAB
+          inputs:
+            - gradle_task: :app:bundleRelease
+            - gradlew_path: $GRADLEW_PATH
+
+      - script@1:
+          title: Export AAB path
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                AAB=$(find "$BITRISE_SOURCE_DIR/app/build/outputs/bundle/release" -name "*.aab" | head -1)
+                echo "AAB found: $AAB"
+                envman add --key BITRISE_AAB_PATH --value "$AAB"
+
+      - google-play-deploy@3:
+          title: Upload to Play Store — internal track
+          inputs:
+            - package_name: $PACKAGE_NAME
+            - track: internal
+            - aab_path: $BITRISE_AAB_PATH
+            - service_account_json_key_path: $BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH
+
+      - cache-push@2:
+          inputs:
+            - cache_paths: |
+                ~/.gradle
+                .gradle
+
+      - deploy-to-bitrise-io@2: {}
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # promote-to-production
+  # Run this manually after validating the internal build.
+  # Promotes the latest internal release to production without a rebuild.
+  #
+  # Required secrets: same as deploy-internal.
+  # ────────────────────────────────────────────────────────────────────────────
+  promote-to-production:
+    steps:
+      - activate-ssh-key@4: {}
+
+      - git-clone@8: {}
+
+      - google-play-deploy@3:
+          title: Promote internal → production
+          inputs:
+            - package_name: $PACKAGE_NAME
+            - track: internal
+            - track_promote_to: production
+            - service_account_json_key_path: $BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH
+            # Leave aab_path empty — promote mode re-uses the already-uploaded bundle.
+            - aab_path: ""
