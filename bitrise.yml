@@ -25,6 +25,13 @@ workflows:
   # ────────────────────────────────────────────────────────────────────────────
   # pr-check
   # Trigger: every PR opened/updated (feature → develop, release/* → main).
+  #
+  # Quality checks (spotlessCheck + detekt) run only on changed modules via
+  # tools/ci/run_quality_checks.py, which posts per-module GitHub commit
+  # statuses (e.g. "spotlessCheck (:presentation) — success").
+  #
+  # Required secrets:
+  #   GITHUB_STATUS_TOKEN — PAT with at least repo:status + repo scope
   # ────────────────────────────────────────────────────────────────────────────
   pr-check:
     steps:
@@ -32,17 +39,22 @@ workflows:
       - git-clone@8: {}
       - cache-pull@2: {}
 
-      - gradle-runner@2:
-          title: Spotless check
+      - script@1:
+          title: Quality checks — spotlessCheck + detekt (changed modules only)
           inputs:
-            - gradle_task: spotlessCheck
-            - gradlew_path: $GRADLEW_PATH
+            - content: |-
+                #!/usr/bin/env bash
+                set -euo pipefail
 
-      - gradle-runner@2:
-          title: Detekt
-          inputs:
-            - gradle_task: detekt
-            - gradlew_path: $GRADLEW_PATH
+                BASE_BRANCH="${BITRISEIO_GIT_BRANCH_DEST:-main}"
+
+                # Bitrise shallow clone: fetch full history so merge-base works
+                if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+                  git fetch --unshallow origin
+                fi
+                git fetch origin "$BASE_BRANCH"
+
+                python3 tools/ci/run_quality_checks.py --base "origin/$BASE_BRANCH"
 
       - gradle-runner@2:
           title: Unit tests
@@ -72,7 +84,7 @@ workflows:
   #   6. Opens a PR from release/<version> → main via GitHub API
   #
   # Required secrets (Bitrise → Secrets):
-  #   GITHUB_PAT  — Personal Access Token with repo scope (to open the PR)
+  #   GITHUB_STATUS_TOKEN — PAT with repo scope (repo:status for checks + repo for PR creation)
   # ────────────────────────────────────────────────────────────────────────────
   prepare-release:
     envs:
@@ -177,7 +189,7 @@ workflows:
                 )
 
                 curl -fsS -X POST \
-                  -H "Authorization: token $GITHUB_PAT" \
+                  -H "Authorization: token $GITHUB_STATUS_TOKEN" \
                   -H "Accept: application/vnd.github.v3+json" \
                   "https://api.github.com/repos/$REPO/pulls" \
                   -d "{\"title\":\"release: $NEW_VERSION_NAME\",\"body\":$BODY,\"head\":\"$RELEASE_BRANCH\",\"base\":\"main\"}"
@@ -196,7 +208,7 @@ workflows:
   # Required secrets (Bitrise → Secrets):
   #   KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD  (signing)
   #   BITRISEIO_SERVICE_ACCOUNT_JSON_KEY_PATH                    (Play Store)
-  #   GITHUB_PAT                                                  (git tag push)
+  #   GITHUB_STATUS_TOKEN                                         (git tag push)
   # ────────────────────────────────────────────────────────────────────────────
   deploy-to-play-store:
     steps:
